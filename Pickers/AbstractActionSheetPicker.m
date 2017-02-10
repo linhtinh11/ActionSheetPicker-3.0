@@ -304,6 +304,7 @@ CG_INLINE BOOL isIPhone4() {
 }
 
 - (UIView*)getInputViewForTextField:(UITextField *)field {
+    self.textField = field;
     UIView *masterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.viewSize.width, 260)];
     
     // to fix bug, appeared only on iPhone 4 Device: https://github.com/skywinder/ActionSheetPicker-3.0/issues/5
@@ -336,12 +337,6 @@ CG_INLINE BOOL isIPhone4() {
         self.pickerView.frame = CGRectMake(0, halfWidth, self.viewSize.width, 220 - halfWidth);
     }
     [masterView addSubview:_pickerView];
-    
-    if ((![MyPopoverController canShowPopover] || self.popoverDisabled) && !self.pickerBackgroundColor && !self.toolbarBackgroundColor && [self.pickerBlurRadius intValue] > 0) {
-        [self blurPickerBackground];
-    } else {
-        [self presentPickerForView:masterView];
-    }
     
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "UnavailableInDeploymentTarget"

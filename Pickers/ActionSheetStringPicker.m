@@ -192,4 +192,13 @@
     return pickerView.frame.size.width - 30;
 }
 
+- (void) updateData:(NSArray *)data
+{
+    self.data = data;
+    if (self.pickerView && [self.pickerView isKindOfClass:[UIPickerView class]]) {
+        UIPickerView *picker = (UIPickerView*)self.pickerView;
+        [picker reloadAllComponents];
+    }
+}
+
 @end
