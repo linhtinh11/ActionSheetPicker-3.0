@@ -303,6 +303,74 @@ CG_INLINE BOOL isIPhone4() {
 
 }
 
+- (UIView*)getInputViewForTextField:(UITextField *)field {
+    UIView *masterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.viewSize.width, 260)];
+    
+    // to fix bug, appeared only on iPhone 4 Device: https://github.com/skywinder/ActionSheetPicker-3.0/issues/5
+    if (isIPhone4()) {
+        masterView.backgroundColor = [UIColor colorWithRed:0.97 green:0.97 blue:0.97 alpha:1.0];
+    }
+    self.toolbar = [self createPickerToolbarWithTitle:self.title];
+    [masterView addSubview:self.toolbar];
+    
+    //ios7 picker draws a darkened alpha-only region on the first and last 8 pixels horizontally, but blurs the rest of its background.  To make the whole popup appear to be edge-to-edge, we have to add blurring to the remaining left and right edges.
+    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
+        CGRect rect = CGRectMake(0, self.toolbar.frame.origin.y, _borderWidth, masterView.frame.size.height - self.toolbar.frame.origin.y);
+        UIToolbar *leftEdge = [[UIToolbar alloc] initWithFrame:rect];
+        rect.origin.x = masterView.frame.size.width - _borderWidth;
+        UIToolbar *rightEdge = [[UIToolbar alloc] initWithFrame:rect];
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnavailableInDeploymentTarget"
+        leftEdge.barTintColor = rightEdge.barTintColor = self.toolbar.barTintColor;
+#pragma clang diagnostic pop
+        [masterView insertSubview:leftEdge atIndex:0];
+        [masterView insertSubview:rightEdge atIndex:0];
+    }
+    
+    self.pickerView = [self configuredPickerView];
+    NSAssert(_pickerView != NULL, @"Picker view failed to instantiate, perhaps you have invalid component data.");
+    // toolbar hidden remove the toolbar frame and update pickerview frame
+    if (self.toolbar.hidden) {
+        int halfWidth = (int) (_borderWidth * 0.5f);
+        masterView.frame = CGRectMake(0, 0, self.viewSize.width, 220);
+        self.pickerView.frame = CGRectMake(0, halfWidth, self.viewSize.width, 220 - halfWidth);
+    }
+    [masterView addSubview:_pickerView];
+    
+    if ((![MyPopoverController canShowPopover] || self.popoverDisabled) && !self.pickerBackgroundColor && !self.toolbarBackgroundColor && [self.pickerBlurRadius intValue] > 0) {
+        [self blurPickerBackground];
+    } else {
+        [self presentPickerForView:masterView];
+    }
+    
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnavailableInDeploymentTarget"
+    {
+        switch (self.tapDismissAction) {
+            case TapActionNone:
+                break;
+            case TapActionSuccess: {
+                // add tap dismiss action
+                self.actionSheet.window.userInteractionEnabled = YES;
+                UITapGestureRecognizer *tapAction = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(actionPickerDone:)];
+                tapAction.delegate = self;
+                [self.actionSheet.window addGestureRecognizer:tapAction];
+                break;
+            }
+            case TapActionCancel: {
+                // add tap dismiss action
+                self.actionSheet.window.userInteractionEnabled = YES;
+                UITapGestureRecognizer *tapAction = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(actionPickerCancel:)];
+                tapAction.delegate = self;
+                [self.actionSheet.window addGestureRecognizer:tapAction];
+                break;
+            }
+        };
+    }
+#pragma clang diagnostic pop
+    return masterView;
+}
+
 - (IBAction)actionPickerDone:(id)sender {
     [self notifyTarget:self.target didSucceedWithAction:self.successAction origin:[self storedOrigin]];
     [self dismissPicker];
@@ -322,6 +390,9 @@ CG_INLINE BOOL isIPhone4() {
         [_actionSheet dismissWithClickedButtonIndex:0 animated:YES];
     else if (self.popOverController && self.popOverController.popoverVisible)
         [_popOverController dismissPopoverAnimated:YES];
+    if (self.textField) {
+        [self.textField resignFirstResponder];
+    }
     self.actionSheet = nil;
     self.popOverController = nil;
     self.selfReference = nil;

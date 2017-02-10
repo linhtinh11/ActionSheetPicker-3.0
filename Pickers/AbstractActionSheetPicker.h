@@ -82,6 +82,7 @@ static NSString *const kActionTarget = @"buttonActionTarget";
 @property(nonatomic) UIInterfaceOrientationMask supportedInterfaceOrientations; // You can set your own supportedInterfaceOrientations value to prevent dismissing picker in some special cases.
 @property(nonatomic) TapAction tapDismissAction; // Specify, which action should be fired in case of tapping outside of the picker (on top darkened side). Default is TapActionNone.
 @property(nonatomic) BOOL popoverDisabled; // Disable popover behavior on iPad
+@property(nonatomic, weak) UITextField *textField;
 
 
 - (void)setTextColor:(UIColor *)textColor;
@@ -91,6 +92,9 @@ static NSString *const kActionTarget = @"buttonActionTarget";
 
 // Present the ActionSheetPicker
 - (void)showActionSheetPicker;
+
+// Return a view to support UITextField.inputView
+- (UIView*)getInputViewForTextField:(UITextField *)field;
 
 // For subclasses.  This is used to send a message to the target upon a successful selection and dismissal of the picker (i.e. not canceled).
 - (void)notifyTarget:(id)target didSucceedWithAction:(SEL)successAction origin:(id)origin;
