@@ -195,6 +195,7 @@
 - (void) updateData:(NSArray *)data
 {
     self.data = data;
+    self.selectedIndex = 0;
     if (self.pickerView && [self.pickerView isKindOfClass:[UIPickerView class]]) {
         UIPickerView *picker = (UIPickerView*)self.pickerView;
         [picker reloadAllComponents];
