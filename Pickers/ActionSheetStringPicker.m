@@ -199,6 +199,7 @@
     if (self.pickerView && [self.pickerView isKindOfClass:[UIPickerView class]]) {
         UIPickerView *picker = (UIPickerView*)self.pickerView;
         [picker reloadAllComponents];
+        [picker selectRow:self.selectedIndex inComponent:0 animated:NO];
     }
 }
 
